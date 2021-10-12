@@ -8,13 +8,15 @@ var grid_file_local = "https://ai2es.github.io/torview/storm/storm_poly_20110108
 function update() {
     d3.json(grid_file_local, function(data) {
         console.log(data);
+        document.getElementById("test").innerHTML = data;
     });
 }
 </script>
 
 <body>
-<p id="test">
-</p>
+<div id="test">
+not changed
+</div>
 <button type="button" id="try" onclick="update()">Try it</button>
 
 </body>
