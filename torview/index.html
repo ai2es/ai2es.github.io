@@ -13,15 +13,17 @@ function loadData(thisurl, callback) {
 }
 var grid_struct;
     loadData(grid_file_local, function(text) {
-        var data = JSON.parse(text);
-        console.log(data);
+        grid_struct = JSON.parse(text);
     });
+function update() {
+    document.getElementById("test").innerHTML(grid_struct.features[1]);
+}
 </script>
 
 <body>
 <p id="test">
 </p>
-<button type="button" id="try">Try it</button>
+<button type="button" id="try" onclick="update()">Try it</button>
 
 </body>
 </html>
