@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://d3js.org/d3-queue.v3.min.js"></script>
+<script>
+var grid_file = "https://ncar-aiml-data-commons.s3.us-west-2.amazonaws.com/gridrad_poly_geojson/storm_poly_20110108.geojson";
+var grid_file_local = "storm/storm_poly_20110108.geojson"
+function loadData(thisurl, callback) {
+    d3.json(thisurl, function (error, grid_json) {
+        if (!error) callback(null, grid_json);
+        else callback(null, []);
+    });
+}
+var grid_struct;
+    loadData(grid_file_local, function(text) {
+        var data = JSON.parse(text);
+        console.log(data);
+    });
+</script>
+
+<body>
+<p id="test">
+</p>
+<button type="button" id="try">Try it</button>
+
+</body>
+</html>
