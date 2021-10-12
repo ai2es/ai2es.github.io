@@ -5,16 +5,9 @@
 <script>
 var grid_file = "https://ncar-aiml-data-commons.s3.us-west-2.amazonaws.com/gridrad_poly_geojson/storm_poly_20110108.geojson";
 var grid_file_local = "https://ai2es.github.io/torview/storm/storm_poly_20110108.geojson"
-function loadData(thisurl, callback) {
-    d3.json(thisurl, function (error, grid_json) {
-        if (!error) callback(null, grid_json);
-        else callback(null, []);
-    });
-}
 function update() {
-    var grid_struct;
-    loadData(grid_file_local, function(text) {
-        document.getElementById("test").innerHTML(text.features[1]);
+    d3.json(grid_file_local, function(data) {
+        console.log(data);
     });
 }
 </script>
