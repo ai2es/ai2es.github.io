@@ -14,9 +14,8 @@ function loadData(thisurl, callback) {
 function update() {
     var grid_struct;
     loadData(grid_file_local, function(text) {
-        grid_struct = JSON.parse(text);
+        document.getElementById("test").innerHTML(text.features[1]);
     });
-    document.getElementById("test").innerHTML(grid_struct.features[1]);
 }
 </script>
 
