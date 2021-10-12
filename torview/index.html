@@ -11,11 +11,11 @@ function loadData(thisurl, callback) {
         else callback(null, []);
     });
 }
-var grid_struct;
+function update() {
+    var grid_struct;
     loadData(grid_file_local, function(text) {
         grid_struct = JSON.parse(text);
     });
-function update() {
     document.getElementById("test").innerHTML(grid_struct.features[1]);
 }
 </script>
