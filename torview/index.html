@@ -1,5 +1,8 @@
 <!DOCTYPE html>
 <html>
+<head>
+<title>ML Storm Viewer</title>
+</head>
 <script src="https://d3js.org/d3-fetch.v3.min.js"></script>
 <script src="https://cdn.plot.ly/plotly-2.5.1.min.js"></script>
 <script>
@@ -10,23 +13,31 @@ async function update() {
     var data = await d3.json(grid_file_date);
 
     console.log(data);
-    var lats = [];
-    var lons = [];
+    var data_table = {};
+    data_table["lon"] = [];
+    data_table["lat"] = [];
+    data_table["valid_time_unix_sec"] = [];
+    data_table["valid_time_date"] = [];
+    var poly_data = [];
     for (let i = 0; i < data.features.length; i++) {
-        lats[i] = (data.features[i].properties.centroid_latitude_deg);
-        lons[i] = (data.features[i].properties.centroid_longitude_deg);
+        data_table["lat"][i] = (data.features[i].properties.centroid_latitude_deg);
+        data_table["lon"][i] = (data.features[i].properties.centroid_longitude_deg);
+        data_table["valid_time_unix_sec"][i] = (data.features[i].properties.valid_time_unix_sec);
+        data_table["valid_time_date"][i] = new Date(0);
+        data_table["valid_time_date"][i].setUTCSeconds(data_table["valid_time_unix_sec"][i]);
     }
-    var plot_data = [{type: "scattermapbox", lon: lons, lat: lats}];
-    console.log(lons);
-    console.log(lats);
+    var plot_data = [{type: "scattermapbox", lon: data_table["lon"], lat: data_table["lat"],
+                     marker: {color: data_table["valid_time_unix_sec"], colorscale: "Portland", size: 5}}];
+
+
+    console.log(data_table);
     // document.getElementById("test").innerHTML = JSON.stringify(data.features[0]);
-    var layout = {mapbox: {center: {lon: -90, lat: 30}, zoom: 2, style: "open-street-map"}, width: 1000, height: 800}
+    var layout = {mapbox: {center: {lon: -90, lat: 30}, zoom: 4, style: "open-street-map"}, width: 1000, height: 800}
     Plotly.newPlot(test, plot_data, layout);
 }
 </script>
 
-<body>
-<button type="button" id="try" onclick="update()">Load</button>
+<body onload="update()">
 <select id="date_sel", name="date_sel", onchange="update()">
 <option value="20110427">2011-04-27</option>
 <option value="20130519">2013-05-19</option>
