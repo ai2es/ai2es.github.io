@@ -1,24 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <title>ML Storm Viewer</title>
 </head>
 <script src="https://d3js.org/d3-fetch.v3.min.js"></script>
 <script src="https://cdn.plot.ly/plotly-2.5.1.min.js"></script>
 <script>
-var grid_file = "https://gridrad-storm.s3.us-west-2.amazonaws.com/storm_poly_YYYYMMDD.geojson";
+let grid_file = "https://gridrad-storm.s3.us-west-2.amazonaws.com/storm_poly_YYYYMMDD.geojson";
 async function update() {
-    sel_date = document.getElementById("date_sel").value;
-    grid_file_date = grid_file.replace("YYYYMMDD", sel_date);
-    var data = await d3.json(grid_file_date);
+    let sel_date = document.getElementById("date_sel").value;
+    let grid_file_date = grid_file.replace("YYYYMMDD", sel_date);
+    let data = await d3.json(grid_file_date);
 
     console.log(data);
-    var data_table = {};
+    let data_table = {};
     data_table["lon"] = [];
     data_table["lat"] = [];
     data_table["valid_time_unix_sec"] = [];
     data_table["valid_time_date"] = [];
-    var poly_data = [];
+    let poly_data = [];
     for (let i = 0; i < data.features.length; i++) {
         data_table["lat"][i] = (data.features[i].properties.centroid_latitude_deg);
         data_table["lon"][i] = (data.features[i].properties.centroid_longitude_deg);
@@ -26,21 +26,23 @@ async function update() {
         data_table["valid_time_date"][i] = new Date(0);
         data_table["valid_time_date"][i].setUTCSeconds(data_table["valid_time_unix_sec"][i]);
     }
-    var plot_data = [{type: "scattermapbox", lon: data_table["lon"], lat: data_table["lat"],
+    let plot_data = [{type: "scattermapbox", lon: data_table["lon"], lat: data_table["lat"],
                      marker: {color: data_table["valid_time_unix_sec"], colorscale: "Portland", size: 5}}];
 
 
     console.log(data_table);
     // document.getElementById("test").innerHTML = JSON.stringify(data.features[0]);
-    var layout = {mapbox: {center: {lon: -90, lat: 30}, zoom: 4, style: "open-street-map"}, width: 1000, height: 800}
-    Plotly.newPlot(test, plot_data, layout);
+    let layout = {mapbox: {center: {lon: -90, lat: 30}, zoom: 4, style: "open-street-map"}, width: 1000, height: 800}
+    Plotly.newPlot(document.getElementById("test"), plot_data, layout);
 }
 </script>
 
 <body onload="update()">
-<select id="date_sel", name="date_sel", onchange="update()">
+<label for="date_sel">Date: </label><select id="date_sel" name="date_sel" onchange="update()">
 <option value="20110427">2011-04-27</option>
+<option value="20130516">2013-05-16</option>
 <option value="20130519">2013-05-19</option>
+<option value="20130520">2013-05-20</option>
 <option value="20130520">2013-05-20</option>
 </select>
 <div id="test">
