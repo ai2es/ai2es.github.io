@@ -12,17 +12,22 @@ async function update() {
     let grid_file_date = grid_file.replace("YYYYMMDD", sel_date);
     let data = await d3.json(grid_file_date);
 
+    // async function update_valid() {
+    //     let sel_valid = document.getElementById("valid_sel").value
+    //     data.features = data.features.filter(function(d){console.log(d.properties.valid_time_unix_sec) ; return d.properties.valid_time_unix_sec==sel_valid})
+    // }
+
+    data.features = data.features.filter(function(d){console.log(d.properties.valid_time_unix_sec) ; return d.properties.valid_time_unix_sec=="1303905600"})
+
     Plotly.newPlot(document.getElementById("test"), [{
-        type: 'scattermapbox',
-        lat: [30],
-        lon: [-90]
+        type: 'scattermapbox'
     }], {
         title: "Storm Polygons",
         height: 800,
         width: 1000,
         mapbox: {
             center: {
-                lat: 30,
+                lat: 33,
                 lon: -90
             },
             style: 'light',
@@ -31,53 +36,38 @@ async function update() {
                 {
                     sourcetype: 'geojson',
                     source: data,
-                    type: 'fill'
+                    type: 'fill',
+                    color: 'rgba(40,0,113,0.8)'
                 },
             ]
         }
         }, {
         mapboxAccessToken: 'pk.eyJ1IjoiZ2dhbnRvcyIsImEiOiJja3dwZnRwOG8wY2RoMnFrMG90dmFsMWF2In0.w0SADoulxc9Noe5SvgmQyA'
         });
-
-    // let data_table = {};
-    // data_table["polygon_lat"] = [];
-    // data_table["polygon_lon"] = [];
-    // data_table["lon"] = [];
-    // data_table["lat"] = [];
-    // data_table["valid_time_unix_sec"] = [];
-    // data_table["valid_time_date"] = [];
-    // for (let i = 0; i < data.features.length; i++) {
-    //     data_table["polygon_lat"][i] = []
-    //     data_table["polygon_lon"][i] = []
-    //     for (let j = 0; j < data.features[i].geometry.coordinates[0].length; j++) {
-    //         data_table["polygon_lat"][i].push(data.features[i].geometry.coordinates[0][j][1]);
-    //         data_table["polygon_lon"][i].push(data.features[i].geometry.coordinates[0][j][0]);
-    //     }
-    //     data_table["valid_time_unix_sec"][i] = (data.features[i].properties.valid_time_unix_sec);
-    //     data_table["valid_time_date"][i] = new Date(0);
-    //     data_table["valid_time_date"][i].setUTCSeconds(data_table["valid_time_unix_sec"][i]);
-    // }
-    // let plot_data = [];
-    // for (let i = 0; i < data.features.length; i++) {
-    //     plot_data[i] = [{type: "scattermapbox", fill: "toself", lon: data_table["polygon_lon"][i], lat: data_table["polygon_lat"][i]}];
-    // }
-    //
-    // let layout = {mapbox: {center: {lon: -90, lat: 30}, zoom: 4, style: "open-street-map"}, width: 1000, height: 800}
-    // Plotly.newPlot(document.getElementById("test"), plot_data[0], layout);
-    // // for (let i = 1; i < data.features.length; i++) {
-    // //     Plotly.react(document.getElementById("test"), plot_data[i], layout);
-    // // }
 }
 </script>
 
 <body onload="update()">
-<label for="date_sel">Date: </label><select id="date_sel" name="date_sel" onchange="update()">
+<!--<body onload="update()">-->
+
+<label for="date_sel">Date: </label>
+<select name="date_sel" id="date_sel" onchange="update()">
 <option value="20110427">2011-04-27</option>
 <option value="20130516">2013-05-16</option>
 <option value="20130519">2013-05-19</option>
 <option value="20130520">2013-05-20</option>
 <option value="20130520">2013-05-20</option>
 </select>
+
+<!--<label for="valid_sel">Valid Time: </label>-->
+<!--<select name="valid_sel" id="valid_sel" onchange="update_valid()">-->
+<!--<option value="20110427">2011-04-27</option>-->
+<!--<option value="20130516">2013-05-16</option>-->
+<!--<option value="20130519">2013-05-19</option>-->
+<!--<option value="20130520">2013-05-20</option>-->
+<!--<option value="20130520">2013-05-20</option>-->
+<!--</select>-->
+
 <div id="test">
 </div>
 
