@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>ML Storm Viewer</title>
+</head>
+<script src="https://d3js.org/d3-fetch.v3.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.5.1.min.js"></script>
+<script>
+let grid_file = "https://gridrad-storm.s3.us-west-2.amazonaws.com/storm_poly_YYYYMMDD.geojson";
+async function update() {
+    let sel_date = document.getElementById("date_sel").value;
+    let grid_file_date = grid_file.replace("YYYYMMDD", sel_date);
+    let data = await d3.json(grid_file_date);
+
+    // async function update_valid() {
+    //     let sel_valid = document.getElementById("valid_sel").value
+    //     data.features = data.features.filter(function(d){console.log(d.properties.valid_time_unix_sec) ; return d.properties.valid_time_unix_sec==sel_valid})
+    // }
+
+    data.features = data.features.filter(function(d){console.log(d.properties.valid_time_unix_sec) ; return d.properties.valid_time_unix_sec=="1303905600"})
+
+    Plotly.newPlot(document.getElementById("test"), [{
+        type: 'scattermapbox'
+    }], {
+        title: "Storm Polygons",
+        height: 800,
+        width: 1000,
+        mapbox: {
+            center: {
+                lat: 33,
+                lon: -90
+            },
+            style: 'light',
+            zoom: 4.8,
+            layers: [
+                {
+                    sourcetype: 'geojson',
+                    source: data,
+                    type: 'fill',
+                    color: 'rgba(40,0,113,0.8)'
+                },
+            ]
+        }
+        }, {
+        mapboxAccessToken: 'pk.eyJ1IjoiZ2dhbnRvcyIsImEiOiJja3dwZnRwOG8wY2RoMnFrMG90dmFsMWF2In0.w0SADoulxc9Noe5SvgmQyA'
+        });
+}
+</script>
+
+<body onload="update()">
+<!--<body onload="update()">-->
+
+<label for="date_sel">Date: </label>
+<select name="date_sel" id="date_sel" onchange="update()">
+<option value="20110427">2011-04-27</option>
+<option value="20130516">2013-05-16</option>
+<option value="20130519">2013-05-19</option>
+<option value="20130520">2013-05-20</option>
+<option value="20130520">2013-05-20</option>
+</select>
+
+<!--<label for="valid_sel">Valid Time: </label>-->
+<!--<select name="valid_sel" id="valid_sel" onchange="update_valid()">-->
+<!--<option value="20110427">2011-04-27</option>-->
+<!--<option value="20130516">2013-05-16</option>-->
+<!--<option value="20130519">2013-05-19</option>-->
+<!--<option value="20130520">2013-05-20</option>-->
+<!--<option value="20130520">2013-05-20</option>-->
+<!--</select>-->
+
+<div id="test">
+</div>
+
+</body>
+</html>
