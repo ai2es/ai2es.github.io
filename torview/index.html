@@ -3,11 +3,52 @@
 <head>
 <title>ML Storm Viewer</title>
 </head>
+
 <script src="https://d3js.org/d3-fetch.v3.min.js"></script>
 <script src="https://cdn.plot.ly/plotly-2.5.1.min.js"></script>
 <script>
 let grid_file = "https://gridrad-storm.s3.us-west-2.amazonaws.com/storm_poly_YYYYMMDD.geojson";
 let data, data_table, plot_data, layout;
+
+async function init() {
+    date_sel = document.getElementById("date_sel");
+    dates = ['20110108', '20110109', '20110125', '20110224', '20110305', '20110319', '20110329', '20110330', '20110331',
+        '20110409', '20110410', '20110414', '20110415', '20110416', '20110421', '20110424', '20110426', '20110427', '20110501',
+        '20110522', '20110524', '20110526', '20110528', '20110529', '20110531', '20110601', '20110608', '20110610', '20110612',
+        '20110622', '20110627', '20110629', '20110706', '20110708', '20110717', '20110726', '20110802', '20110807', '20110821',
+        '20110826', '20110827', '20110828', '20110917', '20110925', '20111007', '20111008', '20111018', '20111107', '20111108',
+        '20111115', '20111116', '20111121', '20111221', '20111222', '20120409', '20120413', '20120414', '20130109', '20130110',
+        '20130112', '20130218', '20130219', '20130305', '20130317', '20130318', '20130324', '20130329', '20130330', '20130407',
+        '20130411', '20130423', '20130424', '20130426', '20130428', '20130507', '20130508', '20130516', '20130519', '20130520',
+        '20130523', '20130526', '20130527', '20130528', '20130531', '20130604', '20130606', '20130612', '20130619', '20130621',
+        '20130626', '20130712', '20130715', '20130725', '20130727', '20130803', '20130805', '20130806', '20130812', '20130826',
+        '20130901', '20130911', '20130916', '20131004', '20131007', '20131012', '20131117', '20131126', '20131214', '20131221',
+        '20140427', '20140510', '20140511', '20140521', '20140616', '20140617', '20140618', '20141012', '20141013', '20150506',
+        '20150519', '20150524', '20150525', '20150527', '20150604', '20151223', '20160415', '20160509', '20160524', '20160525',
+        '20170328', '20170402', '20170403', '20170405', '20170516', '20170518', '20170628', '20170629', '20170718', '20170719',
+        '20180319', '20180403'];
+    dates.forEach(function(t) {
+            let year = t.substring(0, 4);
+            let month = t.substring(4, 6);
+            let day = t.substring(6, 8);
+            let date_str = year + "-" + month + "-" + day;
+            let default_selected = false;
+            if (t === "20110427")
+                default_selected = true;
+            let opt = new Option(date_str, t, default_selected, default_selected);
+            date_sel.add(opt);
+        });
+    document.addEventListener('keypress', async function(event){
+        let code = event.code;
+        if (code === "Period")
+        {
+            await next_time();
+        }
+        if (code === "Comma"){
+            await prev_time();
+        }}, false);
+    update_date();
+}
 async function update_date() {
     let sel_date = document.getElementById("date_sel").value;
     let grid_file_date = grid_file.replace("YYYYMMDD", sel_date);
@@ -35,8 +76,6 @@ async function update_date() {
             Math.pow(data.features[i].properties.east_velocity_m_s01, 2))
 
     }
-    console.log(data);
-    console.log(data_table);
     let all_times = [...new Set(data_table["valid_time_str"])];
     console.log(all_times);
     let time_sel = document.getElementById("time_sel");
@@ -58,11 +97,6 @@ async function update_date() {
             locations: sel_ids,
         z: data_table["speed"], zmin:0, zmax: 40, colorscale: "Portland",
             colorbar: {y: 0, yanchor: "bottom", title: {text: "Storm Speed (m/s)", side: "right"}}}];
-
-
-
-    console.log(data_table);
-    // document.getElementById("test").innerHTML = JSON.stringify(data.features[0]);
     layout = {
         width: 1000,
         height: 800,
@@ -72,31 +106,52 @@ async function update_date() {
             style: "open-street-map",
             }
     };
+
     Plotly.react(document.getElementById("test"), plot_data, layout);
 }
 
-function update_time()
+async function update_time()
 {
     let sel_time = document.getElementById("time_sel").value;
     console.log(sel_time);
     sel_ids = data_table["id"].filter(function(v) {return data_table["valid_time_str"][v] === sel_time});
-    console.log(sel_ids);
     plot_data[0]["locations"] = sel_ids;
-    Plotly.react(document.getElementById("test"), plot_data, layout);
+    await Plotly.react(document.getElementById("test"), plot_data, layout);
 }
+
+async function prev_time()
+{
+    let sel_time_obj = document.getElementById("time_sel");
+    let curr_sel = sel_time_obj.selectedIndex;
+    if (curr_sel > 0)
+    {
+        sel_time_obj.selectedIndex = curr_sel - 1;
+    }
+    await update_time();
+}
+
+async function next_time()
+{
+    let sel_time_obj = document.getElementById("time_sel");
+    let curr_sel = sel_time_obj.selectedIndex;
+    if (curr_sel < (sel_time_obj.length - 1))
+    {
+        sel_time_obj.selectedIndex = curr_sel + 1;
+    }
+    await update_time();
+}
+
 
 </script>
 
-<body onload="update_date()">
+<body onload="init()">
 <label for="date_sel">Date: </label><select id="date_sel" name="date_sel" onchange="update_date()">
-<option value="20110427">2011-04-27</option>
-<option value="20130516">2013-05-16</option>
-<option value="20130519">2013-05-19</option>
-<option value="20130520">2013-05-20</option>
-<option value="20130531">2013-05-31</option>
 </select>
 <select id="time_sel" name="time_sel">
 </select>
+<button id="prev_button" onclick="prev_time()">-5 Minutes (Press , key)</button>
+<button id="next_button" onclick="next_time()">+5 Minutes (Press . key)</button>
+
 <div id="test">
 </div>
 
