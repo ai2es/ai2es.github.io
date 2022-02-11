@@ -7,43 +7,95 @@
 <script src="https://cdn.plot.ly/plotly-2.5.1.min.js"></script>
 <script>
 let grid_file = "https://gridrad-storm.s3.us-west-2.amazonaws.com/storm_poly_YYYYMMDD.geojson";
-async function update() {
+let data, data_table, plot_data, layout;
+async function update_date() {
     let sel_date = document.getElementById("date_sel").value;
     let grid_file_date = grid_file.replace("YYYYMMDD", sel_date);
-    let data = await d3.json(grid_file_date);
-
-    console.log(data);
-    let data_table = {};
+    data = await d3.json(grid_file_date);
+    data_table = {};
     data_table["lon"] = [];
     data_table["lat"] = [];
     data_table["valid_time_unix_sec"] = [];
     data_table["valid_time_date"] = [];
-    let poly_data = [];
+    data_table["valid_time_str"] = [];
+    data_table["speed"] = [];
+    data_table["id"] = [];
+    data_table["full_id"] = [];
     for (let i = 0; i < data.features.length; i++) {
+        data.features[i]["id"] = String(i);
+        data_table["id"][i] = String(i);
         data_table["lat"][i] = (data.features[i].properties.centroid_latitude_deg);
         data_table["lon"][i] = (data.features[i].properties.centroid_longitude_deg);
+        data_table["full_id"][i] = (data.features[i].properties.full_id_string);
         data_table["valid_time_unix_sec"][i] = (data.features[i].properties.valid_time_unix_sec);
         data_table["valid_time_date"][i] = new Date(0);
         data_table["valid_time_date"][i].setUTCSeconds(data_table["valid_time_unix_sec"][i]);
+        data_table["valid_time_str"][i] = data_table["valid_time_date"][i].toUTCString();
+        data_table["speed"][i] = Math.sqrt(Math.pow(data.features[i].properties.north_velocity_m_s01, 2) +
+            Math.pow(data.features[i].properties.east_velocity_m_s01, 2))
+
     }
-    let plot_data = [{type: "scattermapbox", lon: data_table["lon"], lat: data_table["lat"],
-                     marker: {color: data_table["valid_time_unix_sec"], colorscale: "Portland", size: 5}}];
+    console.log(data);
+    console.log(data_table);
+    let all_times = [...new Set(data_table["valid_time_str"])];
+    console.log(all_times);
+    let time_sel = document.getElementById("time_sel");
+    while (time_sel.length > 0) {
+        time_sel.remove(time_sel.length -1);
+    }
+    all_times.forEach(function(t) {
+        let opt = new Option(t, t);
+        time_sel.add(opt);
+    });
+    let sel_time = document.getElementById("time_sel").value;
+    sel_ids = data_table["id"].filter(function(v) {return data_table["valid_time_str"][v] === sel_time});
+    time_sel.setAttribute("onchange", "update_time()");
+    plot_data_old = {type: "scattermapbox", lon: data_table["lon"], lat: data_table["lat"],
+                     marker: {color: data_table["valid_time_unix_sec"], colorscale: "Portland", size: 5},
+                     hovertext: data_table["id"]}
+    plot_data = [
+        {type: "choroplethmapbox", name: "Tornado objs", geojson: data, featureidkey: "id",
+            locations: sel_ids,
+        z: data_table["speed"], zmin:0, zmax: 40, colorscale: "Portland",
+            colorbar: {y: 0, yanchor: "bottom", title: {text: "Storm Speed (m/s)", side: "right"}}}];
+
 
 
     console.log(data_table);
     // document.getElementById("test").innerHTML = JSON.stringify(data.features[0]);
-    let layout = {mapbox: {center: {lon: -90, lat: 30}, zoom: 4, style: "open-street-map"}, width: 1000, height: 800}
-    Plotly.newPlot(document.getElementById("test"), plot_data, layout);
+    layout = {
+        width: 1000,
+        height: 800,
+        mapbox: {
+            center: {lon: -90, lat: 30},
+            zoom: 4,
+            style: "open-street-map",
+            }
+    };
+    Plotly.react(document.getElementById("test"), plot_data, layout);
 }
+
+function update_time()
+{
+    let sel_time = document.getElementById("time_sel").value;
+    console.log(sel_time);
+    sel_ids = data_table["id"].filter(function(v) {return data_table["valid_time_str"][v] === sel_time});
+    console.log(sel_ids);
+    plot_data[0]["locations"] = sel_ids;
+    Plotly.react(document.getElementById("test"), plot_data, layout);
+}
+
 </script>
 
-<body onload="update()">
-<label for="date_sel">Date: </label><select id="date_sel" name="date_sel" onchange="update()">
+<body onload="update_date()">
+<label for="date_sel">Date: </label><select id="date_sel" name="date_sel" onchange="update_date()">
 <option value="20110427">2011-04-27</option>
 <option value="20130516">2013-05-16</option>
 <option value="20130519">2013-05-19</option>
 <option value="20130520">2013-05-20</option>
-<option value="20130520">2013-05-20</option>
+<option value="20130531">2013-05-31</option>
+</select>
+<select id="time_sel" name="time_sel">
 </select>
 <div id="test">
 </div>
