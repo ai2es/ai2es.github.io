@@ -5,36 +5,38 @@
 </head>
 
 <script src="https://d3js.org/d3.v7.min.js"></script>
-<script src="https://cdn.plot.ly/plotly-2.5.1.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.11.1.min.js"></script>
 <script>
-let grid_file = "https://gridrad-storm.s3.us-west-2.amazonaws.com/storm_poly_YYYYMMDD.geojson";
-let track_file = "https://gridrad-storm.s3.us-west-2.amazonaws.com/track_rectangles_YYYYMMDD.geojson"
-let data, data_table, plot_data, layout, tornado_tracks, tornado_mag, sel_date, sel_time, tornado_locs, hail_data;
+let plot_data, layout, hail_data;
 async function init() {
-    let hail_data_temp = await d3.csv("1955-2020_hail.csv",
-        function(data) {
-            return {"lon": parseFloat(data["slon"]), "lat": parseFloat(data["slat"]), "date": data["date"]};
-        });
     hail_data = {};
     hail_data["lon"] = [];
     hail_data["lat"] = [];
     hail_data["date"] = [];
-    for (let i=0; i<hail_data_temp.length; i++){
-        hail_data["lon"][i] = hail_data_temp[i]["lon"] + 0.005 * (2 * Math.random() - 1);
-        hail_data["lat"][i] = hail_data_temp[i]["lat"] + 0.005 * (2 * Math.random() - 1);
-        hail_data["date"][i] = hail_data_temp[i]["date"];
-    }
+    hail_data["size"] = [];
+    hail_data["text"] = [];
+    await d3.csv("1955-2020_hail.csv",
+        function(data) {
+            hail_data["lon"].push(parseFloat(data["slon"]) + 0.005 * (2 * Math.random() - 1));
+            hail_data["lat"].push(parseFloat(data["slat"]) + 0.005 * (2 * Math.random() - 1));
+            hail_data["date"].push(data["date"]);
+            hail_data["size"].push(parseFloat(data["mag"]));
+            hail_data["text"].push(data["date"] + " Size: " + data["mag"]);
+        });
     await update_date();
 }
 async function update_date() {
     plot_data = [
         {type: "scattermapbox", name: "Hail Reports", lon: hail_data["lon"], lat: hail_data["lat"],
-            marker: { color: "green", size: 5 }, text: hail_data["date"]}
+            marker: { color: hail_data["size"], size: 5 , cmin: 0, cmax: 5, colorscale: "Greens"},
+            hovertext: hail_data["text"],
+        }
         ];
     layout = {
         width: 1000,
         height: 700,
         margin: {t: 20, l: 20, b: 20, r: 20},
+        title: "All SPC Hail Reports",
         mapbox: {
             center: {lon: -96, lat: 40},
             zoom: 4,
